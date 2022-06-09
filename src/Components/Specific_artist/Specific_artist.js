@@ -1,10 +1,28 @@
 import { useParams, useLocation } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { BandsContext } from "../../contexts/bandContext";
 import Button from "../Buttons/Button";
 
+import { getSpotifyToken } from "./_spotifyAPI";
+
 export default function SpecificArtist() {
+	// Details for spotify
+	const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
+	// State for token
+	const [token, setToken] = useState({});
+	// State for artist ID
+	const [artistID, setArtistID] = useState("");
+
+	useEffect(() => {
+		const getToken = async () => {
+			setToken(await getSpotifyToken(REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET));
+		};
+		getToken();
+	}, []);
+
+	useEffect(() => {}, [token]);
+
 	const location = useLocation();
 	const { logos } = location.state;
 
@@ -44,7 +62,14 @@ export default function SpecificArtist() {
 					<figcaption>{band.logoCredits}</figcaption>
 					<img src={logos.logos} alt="" />
 				</figure>
-				<iframe src="https://open.spotify.com/embed/playlist/5nqguiHEZDhFDs0szDS8eu?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+				<iframe
+					src="https://open.spotify.com/embed/playlist/5nqguiHEZDhFDs0szDS8eu?utm_source=generator&theme=0"
+					width="100%"
+					height="80"
+					frameBorder="0"
+					allowFullScreen=""
+					allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+				></iframe>
 			</div>
 		</div>
 	);
