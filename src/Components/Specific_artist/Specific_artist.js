@@ -1,28 +1,18 @@
+//TODO SPOTIFY - SPECIFIC ARTIST
+
 import { useParams, useLocation } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { BandsContext } from "../../contexts/bandContext";
 import Button from "../Buttons/Button";
 
-import { getSpotifyToken } from "./_spotifyAPI";
+import SpotifyIframe from "./SpotifyIframe";
+
+import { getSpotifyID } from "./_spotifyAPI";
 
 export default function SpecificArtist() {
-	// Details for spotify
-	const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
-	// State for token
-	const [token, setToken] = useState({});
-	// State for artist ID
-	const [artistID, setArtistID] = useState("");
-
-	useEffect(() => {
-		const getToken = async () => {
-			setToken(await getSpotifyToken(REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET));
-		};
-		getToken();
-	}, []);
-
-	useEffect(() => {}, [token]);
-
+	// Check for first mount
+	const [firstMount, setFirstMount] = useState(true);
 	const location = useLocation();
 	const { logos } = location.state;
 
@@ -32,6 +22,23 @@ export default function SpecificArtist() {
 	const band = bands.filter((band) => {
 		return band.id === params.artistid;
 	})[0];
+
+	// Details for spotify
+	const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
+	// State for artist ID
+	const [artist, setArtist] = useState("");
+
+	useEffect(() => {
+		const getToken = async () => {
+			setArtist(await getSpotifyID(REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET, band.name));
+		};
+
+		if (!firstMount) {
+			getToken();
+		} else {
+			setFirstMount(false);
+		}
+	}, [firstMount]);
 
 	return (
 		<div id="specific_artist">
@@ -62,14 +69,8 @@ export default function SpecificArtist() {
 					<figcaption>{band.logoCredits}</figcaption>
 					<img src={logos.logos} alt="" />
 				</figure>
-				<iframe
-					src="https://open.spotify.com/embed/playlist/5nqguiHEZDhFDs0szDS8eu?utm_source=generator&theme=0"
-					width="100%"
-					height="80"
-					frameBorder="0"
-					allowFullScreen=""
-					allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-				></iframe>
+				{/* Set iframe based on artist */}
+				{artist ? <SpotifyIframe artist={artist} /> : <SpotifyIframe />}
 			</div>
 		</div>
 	);
